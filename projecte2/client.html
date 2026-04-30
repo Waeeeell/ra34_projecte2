@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API REST - Tienda Online</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #764ba2;
+        }
+        button.delete {
+            background: #e74c3c;
+        }
+        button.delete:hover {
+            background: #c0392b;
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .output {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 15px;
+        }
+        .output.error {
+            color: #e74c3c;
+            background: #ffe5e5;
+        }
+        .output.success {
+            color: #27ae60;
+            background: #e8f5e9;
+        }
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 API REST - Tienda Online de Productos</h1>
+
+        <!-- CRUD -->
+        <div class="section">
+            <h2>📋 CRUD Básico</h2>
+            <div class="button-group">
+                <button onclick="getAllProducts()">GET - Todos los productos</button>
+                <button onclick="getProductById()">GET - Producto por ID</button>
+                <button onclick="deleteProduct()">DELETE - Eliminar (físico)</button>
+                <button onclick="logicalDelete()">DELETE - Eliminar (lógico)</button>
+            </div>
+            <div class="input-group">
+                <input type="number" id="productId" placeholder="ID del producto" min="1">
+            </div>
+            <div class="output" id="output"></div>
+        </div>
+
+        <!-- Crear Producto -->
+        <div class="section">
+            <h2>➕ Crear Producto</h2>
+            <div class="form-group">
+                <input type="text" id="name" placeholder="Nombre (máx 20)" maxlength="20" required>
+                <input type="text" id="description" placeholder="Descripción (máx 100)" maxlength="100">
+                <input type="number" id="stock" placeholder="Stock" min="0" required>
+                <input type="number" id="price" placeholder="Precio" min="0" step="0.01" required>
+                <input type="number" id="rating" placeholder="Rating (0-5)" min="0" max="5" step="0.1">
+                <select id="condition" required>
+                    <option value="">Selecciona condición</option>
+                    <option value="NUEVO">NUEVO</option>
+                    <option value="BON_ESTAT">BON_ESTAT</option>
+                    <option value="ACCEPTABLE">ACCEPTABLE</option>
+                    <option value="MAL_ESTAT">MAL_ESTAT</option>
+                </select>
+            </div>
+            <button onclick="createProduct()">✅ Crear Producto</button>
+            <div class="output" id="createOutput"></div>
+        </div>
+
+        <!-- Búsquedas -->
+        <div class="section">
+            <h2>🔍 Búsquedas</h2>
+            <div class="input-group">
+                <input type="text" id="namePrefix" placeholder="Nombre (búsqueda)">
+                <button onclick="searchByName()">Buscar por nombre</button>
+            </div>
+            <div class="input-group">
+                <select id="conditionFilter">
+                    <option value="">Todas las condiciones</option>
+                    <option value="NUEVO">NUEVO</option>
+                    <option value="BON_ESTAT">BON_ESTAT</option>
+                    <option value="ACCEPTABLE">ACCEPTABLE</option>
+                    <option value="MAL_ESTAT">MAL_ESTAT</option>
+                </select>
+                <button onclick="searchByCondition()">Buscar por condición</button>
+            </div>
+            <div class="input-group">
+                <select id="orderField">
+                    <option value="">Selecciona campo</option>
+                    <option value="precio">Precio</option>
+                    <option value="rating">Rating</option>
+                </select>
+                <select id="orderDir">
+                    <option value="asc">Ascendente</option>
+                    <option value="desc">Descendente</option>
+                </select>
+                <button onclick="orderProducts()">Ordenar</button>
+            </div>
+            <div class="output" id="searchOutput"></div>
+        </div>
+
+        <!-- JPQL -->
+        <div class="section">
+            <h2>📊 Búsquedas Avanzadas (JPQL)</h2>
+            <div class="button-group">
+                <button onclick="getBestQualityPrice()">Top 5 Mejor calidad-precio</button>
+                <button onclick="getTopNewRated()">Top 10 Nuevos mejor valorados</button>
+            </div>
+            <div class="input-group">
+                <input type="number" id="priceMin" placeholder="Precio mínimo" min="0" step="0.01">
+                <input type="number" id="priceMax" placeholder="Precio máximo" min="0" step="0.01">
+                <button onclick="searchByPriceRange()">Buscar rango precios</button>
+            </div>
+            <div class="input-group">
+                <input type="number" id="ratingMin" placeholder="Rating mínimo (0-5)" min="0" max="5" step="0.1">
+                <input type="number" id="ratingMax" placeholder="Rating máximo (0-5)" min="0" max="5" step="0.1">
+                <button onclick="searchByRatingRange()">Buscar rango rating</button>
+            </div>
+            <div class="output" id="jpqlOutput"></div>
+        </div>
+
+        <!-- Paginación -->
+        <div class="section">
+            <h2>📄 Paginación</h2>
+            <div class="input-group">
+                <input type="number" id="page" placeholder="Página (0,1,2...)" min="0" value="0">
+                <input type="number" id="size" placeholder="Tamaño (productos por página)" min="1" value="5">
+                <button onclick="getPaginated()">Obtener página</button>
+            </div>
+            <div class="output" id="paginatedOutput"></div>
+        </div>
+
+        <!-- CSV Upload -->
+        <div class="section">
+            <h2>📁 Carga CSV</h2>
+            <div class="input-group">
+                <input type="file" id="csvFile" accept=".csv">
+                <button onclick="uploadCSV()">📤 Subir CSV</button>
+            </div>
+            <div class="output" id="csvOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/products';
+
+        function showOutput(elementId, data, isError = false) {
+            const element = document.getElementById(elementId);
+            element.classList.remove('error', 'success');
+            element.classList.add(isError ? 'error' : 'success');
+            
+            if (typeof data === 'string') {
+                element.textContent = data;
+            } else {
+                element.textContent = JSON.stringify(data, null, 2);
+            }
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => response.text());
+                    throw new Error(`${response.status}: ${JSON.stringify(errorData)}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // CRUD
+        async function getAllProducts() {
+            try {
+                const data = await makeRequest(`${API_BASE}`);
+                showOutput('output', data);
+            } catch (error) {
+                showOutput('output', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function getProductById() {
+            const id = document.getElementById('productId').value;
+            if (!id) {
+                showOutput('output', 'Por favor ingresa un ID', true);
+                return;
+            }
+            try {
+                const data = await makeRequest(`${API_BASE}/${id}`);
+                showOutput('output', data);
+            } catch (error) {
+                showOutput('output', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function createProduct() {
+            const product = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value,
+                stock: parseInt(document.getElementById('stock').value),
+                price: parseFloat(document.getElementById('price').value),
+                rating: document.getElementById('rating').value ? parseFloat(document.getElementById('rating').value) : null,
+                condition: document.getElementById('condition').value
+            };
+
+            if (!product.name || !product.condition || !product.stock || !product.price) {
+                showOutput('createOutput', 'Rellena todos los campos requeridos', true);
+                return;
+            }
+
+            try {
+                const data = await makeRequest(`${API_BASE}`, {
+                    method: 'POST',
+                    body: JSON.stringify(product)
+                });
+                showOutput('createOutput', data);
+                document.getElementById('name').value = '';
+                document.getElementById('description').value = '';
+            } catch (error) {
+                showOutput('createOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function deleteProduct() {
+            const id = document.getElementById('productId').value;
+            if (!id) {
+                showOutput('output', 'Por favor ingresa un ID', true);
+                return;
+            }
+            try {
+                await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+                showOutput('output', `✅ Producto ${id} eliminado`);
+            } catch (error) {
+                showOutput('output', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function logicalDelete() {
+            const id = document.getElementById('productId').value;
+            if (!id) {
+                showOutput('output', 'Por favor ingresa un ID', true);
+                return;
+            }
+            try {
+                await fetch(`${API_BASE}/${id}/logical`, { method: 'DELETE' });
+                showOutput('output', `✅ Producto ${id} eliminado lógicamente`);
+            } catch (error) {
+                showOutput('output', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Búsquedas
+        async function searchByName() {
+            const prefix = document.getElementById('namePrefix').value;
+            if (!prefix) {
+                showOutput('searchOutput', 'Ingresa un nombre', true);
+                return;
+            }
+            try {
+                const data = await makeRequest(`${API_BASE}/search/nombre?prefix=${prefix}`);
+                showOutput('searchOutput', data);
+            } catch (error) {
+                showOutput('searchOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function searchByCondition() {
+            const condition = document.getElementById('conditionFilter').value;
+            if (!condition) {
+                showOutput('searchOutput', 'Selecciona una condición', true);
+                return;
+            }
+            try {
+                const data = await makeRequest(`${API_BASE}/search/condition?condition=${condition}`);
+                showOutput('searchOutput', data);
+            } catch (error) {
+                showOutput('searchOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function orderProducts() {
+            const field = document.getElementById('orderField').value;
+            const order = document.getElementById('orderDir').value;
+            if (!field) {
+                showOutput('searchOutput', 'Selecciona un campo', true);
+                return;
+            }
+            try {
+                const data = await makeRequest(`${API_BASE}/search/order?campo=${field}&order=${order}`);
+                showOutput('searchOutput', data);
+            } catch (error) {
+                showOutput('searchOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        // JPQL
+        async function getBestQualityPrice() {
+            try {
+                const data = await makeRequest(`${API_BASE}/search/best-quality-price`);
+                showOutput('jpqlOutput', data);
+            } catch (error) {
+                showOutput('jpqlOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function getTopNewRated() {
+            try {
+                const data = await makeRequest(`${API_BASE}/search/top-new-rated`);
+                showOutput('jpqlOutput', data);
+            } catch (error) {
+                showOutput('jpqlOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function searchByPriceRange() {
+            const min = document.getElementById('priceMin').value;
+            const max = document.getElementById('priceMax').value;
+            if (!min || !max) {
+                showOutput('jpqlOutput', 'Ingresa ambos precios', true);
+                return;
+            }
+            try {
+                const data = await makeRequest(`${API_BASE}/search/price-range?priceMin=${min}&priceMax=${max}`);
+                showOutput('jpqlOutput', data);
+            } catch (error) {
+                showOutput('jpqlOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        async function searchByRatingRange() {
+            const min = document.getElementById('ratingMin').value;
+            const max = document.getElementById('ratingMax').value;
+            if (!min || !max) {
+                showOutput('jpqlOutput', 'Ingresa ambos ratings', true);
+                return;
+            }
+            try {
+                const data = await makeRequest(`${API_BASE}/search/rating-range?ratingMin=${min}&ratingMax=${max}`);
+                showOutput('jpqlOutput', data);
+            } catch (error) {
+                showOutput('jpqlOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Paginación
+        async function getPaginated() {
+            const page = document.getElementById('page').value || 0;
+            const size = document.getElementById('size').value || 5;
+            try {
+                const data = await makeRequest(`${API_BASE}/paginated?page=${page}&size=${size}`);
+                showOutput('paginatedOutput', data);
+            } catch (error) {
+                showOutput('paginatedOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        // CSV Upload
+        async function uploadCSV() {
+            const file = document.getElementById('csvFile').files[0];
+            if (!file) {
+                showOutput('csvOutput', 'Selecciona un archivo CSV', true);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(JSON.stringify(errorData));
+                }
+                
+                const data = await response.json();
+                showOutput('csvOutput', data);
+            } catch (error) {
+                showOutput('csvOutput', `Error: ${error.message}`, true);
+            }
+        }
+
+        // Cargar todos los productos al iniciar
+        getAllProducts();
+    </script>
+</body>
+</html>

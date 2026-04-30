@@ -1,0 +1,21 @@
+name,description,stock,price,rating,condition
+Laptop Dell,Laptop para desarrollo,5,1299.99,4.5,NUEVO
+Mouse Logitech,Mouse inalámbrico,20,45.99,4.2,NUEVO
+Teclado Mecánico,Teclado RGB 60%,15,89.99,4.8,NUEVO
+Monitor LG 27,Monitor IPS 1440p,8,349.99,4.6,BON_ESTAT
+Webcam HD,Cámara 1080p,12,79.99,3.9,BON_ESTAT
+Micrófono USB,Micrófono condenser,7,149.99,4.4,NUEVO
+Headset Razer,Headset gaming,10,199.99,4.3,NUEVO
+Cable HDMI,Cable HDMI 2m,50,9.99,3.8,ACCEPTABLE
+Adaptador USB-C,Adaptador multipuerto,25,39.99,4.1,BON_ESTAT
+SSD 1TB,Disco SSD 1TB NVMe,18,109.99,4.7,NUEVO
+RAM 16GB,Memoria RAM DDR4,12,89.99,4.5,BON_ESTAT
+Cargador Rápido,Cargador 65W USB-C,30,29.99,3.7,ACCEPTABLE
+Almohada Ergonómica,Almohada para escritorio,8,35.99,4.0,NUEVO
+Lámpara LED,Lámpara de escritorio,22,49.99,4.2,NUEVO
+Ventilador USB,Ventilador portátil,40,19.99,3.5,ACCEPTABLE
+Protector Pantalla,Protector para monitor,100,4.99,3.9,MAL_ESTAT
+Funda Laptop,Funda protectora 15,30,24.99,4.1,BON_ESTAT
+Hub USB,Hub USB 3.0 7 puertos,15,59.99,4.4,NUEVO
+Limpiador Pantalla,Kit limpieza pantalla,50,12.99,3.6,MAL_ESTAT
+Soporte Monitor,Soporte ajustable,6,89.99,4.3,NUEVO
